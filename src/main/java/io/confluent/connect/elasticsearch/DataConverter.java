@@ -16,22 +16,19 @@
 package io.confluent.connect.elasticsearch;
 
 import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.connect.data.ConnectSchema;
-import org.apache.kafka.connect.data.Date;
-import org.apache.kafka.connect.data.Decimal;
-import org.apache.kafka.connect.data.Field;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaBuilder;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.data.Time;
-import org.apache.kafka.connect.data.Timestamp;
+import org.apache.kafka.connect.data.*;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.errors.DataException;
+import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.storage.Converter;
+import org.apache.kafka.connect.storage.HeaderConverter;
+import org.apache.kafka.connect.storage.SimpleHeaderConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -184,7 +181,22 @@ public class DataConverter {
 
     final String payload = getPayload(record, ignoreSchema);
     final Long version = ignoreKey ? null : record.kafkaOffset();
-    return new IndexableRecord(new Key(index, type, id), payload, version);
+    Header header = record.headers().lastWithName("ss-header");
+    /*System.out.println("HEADER--------" + header);
+    SimpleHeaderConverter headerConverter = new SimpleHeaderConverter();
+    //byte[] serialized2 = headerConverter.fromConnectHeader(record.topic(), header, Schema.STRING_SCHEMA, header.value());
+    SchemaAndValue result2 = headerConverter.toConnectHeader(record.topic(), "ss-header", (byte[]) header.value());
+    System.out.println("HEADER CONVERTED STRING-------" + result2.value());
+    //JSON_CONVERTER.fromConnectData(record.topic(), )
+    SchemaAndValue result3 = JSON_CONVERTER.toConnectData(record.topic(), (byte[]) header.value());
+    System.out.println("JSON CONVERTED VALUE ---------"+ result3.value());*/
+    String operation = null;
+    if (header != null) {
+     operation =  ((Map) header.value()).get("operation").toString();
+     System.out.println("OPERATION VALUE ---------------" + operation);
+      //operation = header.value().toString();
+    }
+    return new IndexableRecord(new Key(index, type, id), payload, version, operation);
   }
 
   private String getPayload(SinkRecord record, boolean ignoreSchema) {
@@ -438,3 +450,4 @@ public class DataConverter {
     }
   }
 }
+

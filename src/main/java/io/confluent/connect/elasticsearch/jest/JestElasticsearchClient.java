@@ -469,6 +469,10 @@ public class JestElasticsearchClient implements ElasticsearchClient {
     if (record.payload == null) {
       return toDeleteRequest(record);
     }
+    String operation = record.operation;
+    if (operation != null) {
+      writeMethod = WriteMethod.forValue(operation);
+    }
     return writeMethod == WriteMethod.INSERT
             ? toIndexRequest(record)
             : toUpdateRequest(record);
@@ -611,3 +615,4 @@ public class JestElasticsearchClient implements ElasticsearchClient {
     }
   }
 }
+

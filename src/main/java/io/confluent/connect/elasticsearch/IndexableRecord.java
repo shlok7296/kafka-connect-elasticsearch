@@ -21,12 +21,14 @@ public class IndexableRecord {
 
   public final Key key;
   public final String payload;
+  public String operation;
   public final Long version;
 
-  public IndexableRecord(Key key, String payload, Long version) {
+  public IndexableRecord(Key key, String payload, Long version, String operation) {
     this.key = key;
     this.version = version;
     this.payload = payload;
+    this.operation = operation;
   }
 
   @Override
@@ -48,3 +50,4 @@ public class IndexableRecord {
     return Objects.hash(key, version, payload);
   }
 }
+
